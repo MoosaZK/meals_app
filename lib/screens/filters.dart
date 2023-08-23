@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meals/provider/filters_provider.dart';
 
-class FilterScreen extends StatefulWidget {
-  const FilterScreen({super.key, required this.currentFilters});
-  final Map<Filter, bool> currentFilters;
+class FilterScreen extends ConsumerStatefulWidget {
+  const FilterScreen({super.key});
   @override
-  State<FilterScreen> createState() {
+  ConsumerState<FilterScreen> createState() {
     return _FilterScreenState();
   }
 }
 
-enum Filter { glutenFree, lactoseFree, vegetarian, vegan }
-
-class _FilterScreenState extends State<FilterScreen> {
+class _FilterScreenState extends ConsumerState<FilterScreen> {
   var _glutenFreeFilterSet = false;
   var _lactoseFreeFilterSet = false;
   var _vegetrianFreeFilterSet = false;
@@ -20,10 +19,11 @@ class _FilterScreenState extends State<FilterScreen> {
   @override
   void initState() {
     super.initState();
-    _glutenFreeFilterSet = widget.currentFilters[Filter.glutenFree]!;
-    _lactoseFreeFilterSet = widget.currentFilters[Filter.lactoseFree]!;
-    _veganFreeFilterSet = widget.currentFilters[Filter.vegan]!;
-    _vegetrianFreeFilterSet = widget.currentFilters[Filter.vegetarian]!;
+    final activeFilters = ref.read(filtersProvider);
+    _glutenFreeFilterSet = activeFilters[Filter.glutenFree]!;
+    _lactoseFreeFilterSet = activeFilters[Filter.lactoseFree]!;
+    _veganFreeFilterSet = activeFilters[Filter.vegan]!;
+    _vegetrianFreeFilterSet = activeFilters[Filter.vegetarian]!;
   }
 
   @override
@@ -46,13 +46,13 @@ class _FilterScreenState extends State<FilterScreen> {
       // ),
       body: WillPopScope(
         onWillPop: () async {
-          Navigator.of(context).pop({
+          ref.read(filtersProvider.notifier).setFilters({
             Filter.glutenFree: _glutenFreeFilterSet,
             Filter.lactoseFree: _lactoseFreeFilterSet,
             Filter.vegetarian: _vegetrianFreeFilterSet,
             Filter.vegan: _veganFreeFilterSet
           });
-          return false;
+          return true;
         },
         child: Column(children: [
           SwitchListTile(
